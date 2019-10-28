@@ -42,5 +42,5 @@ resources:
         ["80"]
     sourceRanges: ["0.0.0.0/0"]
     
-    #Save the file and run the deploy using the following command:
+    #Save the file and run the deploy using the following command in cloud shell:
     gcloud deployment-manager deployments create vm-test --config=qwiklabs.yaml
