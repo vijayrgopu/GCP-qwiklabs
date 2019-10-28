@@ -1,0 +1,46 @@
+#There are 3 files in the code when you import, you will update qwiklabs.jinja file and then run the deployment command.
+
+resources:
+- type: compute.v1.instance
+  name: vm-test
+  properties:
+    zone: {{ properties["zone"] }}
+    machineType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/machineTypes/f1-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        diskName: disk-{{ env["deployment"] }}
+        sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-9
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/global/networks/default
+      # Access Config required to give the instance a public IP address
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    metadata:
+      items:
+      - key: startup-script
+        value: |-
+          #!/bin/bash
+          apt-get update
+          apt-get install -y apache2
+    tags:
+        items:
+        - http
+- type: compute.v1.firewall
+  name: default-allow-http
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/global/networks/default
+    targetTags:
+    - http
+    allowed:
+    - IPProtocol: tcp
+      ports:
+        ["80"]
+    sourceRanges: ["0.0.0.0/0"]
+    
+    #Save the file and run the deploy using the following command:
+    gcloud deployment-manager deployments create vm-test --config=qwiklabs.yaml
